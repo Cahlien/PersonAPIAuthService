@@ -8,6 +8,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
@@ -37,6 +38,13 @@ import java.util.UUID;
 
 @Configuration
 public class SecurityConfiguration {
+
+    private final Environment environment;
+
+    public SecurityConfiguration(Environment environment) {
+        this.environment = environment;
+    }
+
     @Bean
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -82,8 +90,8 @@ public class SecurityConfiguration {
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .redirectUri("http://localhost:8080/login/oauth2/code/messaging-client-oidc")
-                .redirectUri("http://localhost:8080/authorized")
+                .redirectUri(String.format("http://%s/login/oauth2/code/messaging-client-oidc", environment.getProperty("CONSUMER_URI")))
+                .redirectUri(String.format("http://%s/authorized", environment.getProperty("CONSUMER_URI")))
                 .scope(OidcScopes.OPENID)
                 .scope(OidcScopes.PROFILE)
                 .scope("message.read")
